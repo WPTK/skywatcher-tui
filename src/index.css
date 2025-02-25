@@ -1,32 +1,31 @@
 
 @import '@fontsource/jetbrains-mono';
-@import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 0 0% 0%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 3%;
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 3%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 120 100% 50%;
-    --primary-foreground: 0 0% 0%;
-    --secondary: 120 5% 15%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 120 5% 15%;
-    --muted-foreground: 0 0% 65%;
-    --accent: 120 5% 15%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 100% 50%;
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 240 5.9% 10%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
+    --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 120 5% 15%;
-    --input: 120 5% 15%;
-    --ring: 120 100% 50%;
-    --radius: 0px;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 240 5.9% 10%;
+    --radius: 1rem;
   }
 }
 
@@ -35,71 +34,15 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground font-mono;
-    font-family: 'VT323', 'JetBrains Mono', monospace;
+    @apply bg-background text-foreground antialiased;
+    font-family: 'JetBrains Mono', monospace;
   }
-}
-
-@keyframes scanlines {
-  0% {
-    background-position: 0 0;
-  }
-  100% {
-    background-position: 0 100%;
-  }
-}
-
-@keyframes flicker {
-  0% { opacity: 0.98; }
-  5% { opacity: 0.95; }
-  10% { opacity: 0.9; }
-  15% { opacity: 0.85; }
-  20% { opacity: 0.95; }
-  25% { opacity: 0.9; }
-  30% { opacity: 0.98; }
-  35% { opacity: 0.9; }
-  40% { opacity: 0.95; }
-  45% { opacity: 0.98; }
-  50% { opacity: 0.94; }
-  100% { opacity: 1; }
-}
-
-@keyframes blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
 }
 
 .terminal-window {
-  @apply bg-card border border-border rounded-none p-4;
+  @apply bg-card border border-border rounded-lg p-4;
   position: relative;
   overflow: hidden;
-}
-
-.terminal-window.scanlines-enabled::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: repeating-linear-gradient(
-    0deg,
-    rgba(0, 0, 0, 0.1) 0px,
-    rgba(0, 0, 0, 0.1) 1px,
-    transparent 1px,
-    transparent 2px
-  );
-  pointer-events: none;
-  animation: scanlines 10s linear infinite;
-  z-index: 10;
-}
-
-.terminal-window.flicker-enabled {
-  animation: flicker 2s infinite;
-}
-
-.text-glow-enabled {
-  text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
 }
 
 .terminal-header {
@@ -121,11 +64,6 @@
 
 .terminal-input {
   @apply bg-transparent border-none focus:outline-none text-foreground w-full;
-}
-
-.terminal-input.cursor-blink-enabled::after {
-  content: '█';
-  animation: blink 1s step-end infinite;
 }
 
 .terminal-table {
