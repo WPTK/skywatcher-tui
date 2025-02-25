@@ -28,14 +28,8 @@ const Index = () => {
     <UserPreferencesProvider>
       <div className="min-h-screen bg-background text-foreground">
         <div className="terminal-window">
-          <div className="ascii-border-top text-primary mb-4">
-            ╔════════════════════════════════════════════╗
-          </div>
           <TerminalHeader />
           <AircraftList onSelect={setSelectedAircraft} userLocation={userLocation} />
-          <div className="ascii-border-bottom text-primary mt-4">
-            ╚════════════════════════════════════════════╝
-          </div>
         </div>
         <AircraftDetail 
           aircraft={selectedAircraft} 
@@ -49,3 +43,4 @@ const Index = () => {
 };
 
 export default Index;
+

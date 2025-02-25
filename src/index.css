@@ -1,3 +1,4 @@
+
 @import '@fontsource/jetbrains-mono';
 @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
 @tailwind base;
@@ -103,24 +104,7 @@
 
 .terminal-header {
   @apply text-primary font-bold mb-4 flex items-center gap-2;
-  border: 1px solid hsl(var(--primary));
   padding: 0.5rem;
-}
-
-.terminal-header::before {
-  content: "┌──────────────────────────┐";
-  position: absolute;
-  top: 0;
-  left: 0;
-  color: hsl(var(--primary));
-}
-
-.terminal-header::after {
-  content: "└──────────────────────────┘";
-  position: absolute;
-  bottom: -1.5rem;
-  left: 0;
-  color: hsl(var(--primary));
 }
 
 .terminal-content {
@@ -184,3 +168,4 @@
 .aircraft-detail.closed {
   @apply translate-x-full;
 }
+
