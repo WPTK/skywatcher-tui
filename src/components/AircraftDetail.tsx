@@ -1,6 +1,7 @@
 
-import { X } from "lucide-react";
+import { X, Navigation2, ArrowUp, ArrowDown, Star } from "lucide-react";
 import type { Aircraft } from "@/pages/Index";
+import { useUserPreferences } from "@/contexts/UserPreferencesContext";
 
 const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
   const R = 3959; // Radius of the Earth in miles
@@ -23,6 +24,8 @@ export const AircraftDetail = ({
   onClose: () => void;
   userLocation: { lat: number; lon: number };
 }) => {
+  const { preferences, toggleFavorite } = useUserPreferences();
+  
   if (!aircraft) return null;
 
   const distance = calculateDistance(
@@ -32,13 +35,23 @@ export const AircraftDetail = ({
     aircraft.lon
   );
 
+  const isFavorite = preferences.favoriteCallsigns.includes(aircraft.callsign);
+
   return (
     <div className={`aircraft-detail ${!aircraft ? "closed" : ""}`}>
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-primary font-bold">
-          {aircraft.callsign} 
-          {aircraft.isMilitary && <span className="text-red-500 ml-2">(Military)</span>}
-        </h2>
+        <div className="flex items-center gap-2">
+          <h2 className="text-primary font-bold">
+            {aircraft.callsign}
+            {aircraft.isMilitary && <span className="text-red-500 ml-2">(Military)</span>}
+          </h2>
+          <button 
+            onClick={() => toggleFavorite(aircraft.callsign)}
+            className={`text-muted-foreground hover:text-primary ${isFavorite ? 'text-primary' : ''}`}
+          >
+            <Star size={16} fill={isFavorite ? 'currentColor' : 'none'} />
+          </button>
+        </div>
         <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
           <X size={16} />
         </button>
@@ -49,24 +62,46 @@ export const AircraftDetail = ({
           <div>{aircraft.type}</div>
         </div>
         <div>
+          <div className="text-muted-foreground">Owner</div>
+          <div>{aircraft.owner || 'Unknown'}</div>
+        </div>
+        <div>
           <div className="text-muted-foreground">Position</div>
           <div>{`${aircraft.lat.toFixed(4)}°N, ${aircraft.lon.toFixed(4)}°E`}</div>
         </div>
         <div>
           <div className="text-muted-foreground">Distance</div>
-          <div>{distance.toFixed(1)} mi</div>
+          <div>{distance.toFixed(1)} {preferences.useMetric ? 'km' : 'mi'}</div>
         </div>
         <div>
           <div className="text-muted-foreground">Altitude</div>
-          <div>{aircraft.altitude} ft</div>
+          <div className="flex items-center gap-2">
+            {aircraft.altitude} ft
+            {aircraft.previousAltitude && (
+              aircraft.altitude > aircraft.previousAltitude ? (
+                <ArrowUp size={14} className="text-primary" />
+              ) : aircraft.altitude < aircraft.previousAltitude ? (
+                <ArrowDown size={14} className="text-destructive" />
+              ) : null
+            )}
+          </div>
         </div>
         <div>
           <div className="text-muted-foreground">Speed</div>
-          <div>{Math.round(aircraft.speed * 1.15)} mph</div>
+          <div>
+            {Math.round(aircraft.speed * (preferences.useMetric ? 1.852 : 1.15))} {preferences.useMetric ? 'km/h' : 'mph'}
+          </div>
         </div>
         <div>
           <div className="text-muted-foreground">Heading</div>
-          <div>{aircraft.heading}°</div>
+          <div className="flex items-center gap-2">
+            {aircraft.heading}°
+            <Navigation2 
+              size={14} 
+              className="text-muted-foreground"
+              style={{ transform: `rotate(${aircraft.heading}deg)` }}
+            />
+          </div>
         </div>
       </div>
     </div>
