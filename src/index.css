@@ -99,3 +99,81 @@
 .aircraft-detail.closed {
   @apply translate-x-full;
 }
+
+/* CRT Effect */
+.crt-effect {
+  @apply relative overflow-hidden;
+}
+
+.crt-effect::before {
+  content: "";
+  @apply absolute inset-0 pointer-events-none;
+  background: linear-gradient(
+    to bottom,
+    transparent 50%,
+    rgba(0, 0, 0, 0.1) 50%
+  );
+  background-size: 100% 4px;
+}
+
+/* Scanlines */
+.scanlines {
+  @apply relative overflow-hidden;
+}
+
+.scanlines::before {
+  content: "";
+  @apply absolute inset-0 pointer-events-none;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(0, 0, 0, 0.1) 50%,
+    transparent 100%
+  );
+  animation: scanlines 10s linear infinite;
+}
+
+/* Screen Flicker */
+.screen-flicker {
+  animation: flicker 0.15s infinite;
+}
+
+@keyframes scanlines {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(4px);
+  }
+}
+
+@keyframes flicker {
+  0% {
+    opacity: 0.97;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.98;
+  }
+}
+
+/* Terminal Themes */
+.theme-amber {
+  --primary: 39 100% 50%;
+  --foreground: 39 100% 50%;
+  filter: sepia(100%) hue-rotate(350deg) saturate(400%);
+}
+
+.theme-green {
+  --primary: 120 100% 50%;
+  --foreground: 120 100% 50%;
+  filter: sepia(100%) hue-rotate(90deg) saturate(400%);
+}
+
+.theme-blue {
+  --primary: 240 100% 50%;
+  --foreground: 240 100% 50%;
+  filter: sepia(100%) hue-rotate(180deg) saturate(400%);
+}

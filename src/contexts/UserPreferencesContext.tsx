@@ -8,6 +8,12 @@ interface UserPreferences {
   };
   useMetric: boolean;
   favoriteCallsigns: string[];
+  theme: {
+    enableCRT: boolean;
+    enableScanlines: boolean;
+    enableFlicker: boolean;
+    terminalTheme: 'modern' | 'amber' | 'green' | 'blue';
+  };
 }
 
 interface UserPreferencesContextType {
@@ -15,12 +21,19 @@ interface UserPreferencesContextType {
   setLocation: (lat: number, lon: number) => void;
   toggleMetric: () => void;
   toggleFavorite: (callsign: string) => void;
+  updateTheme: (theme: Partial<UserPreferences['theme']>) => void;
 }
 
 const defaultPreferences: UserPreferences = {
   location: { lat: 51.5074, lon: -0.1278 }, // Default to London
   useMetric: false,
   favoriteCallsigns: [],
+  theme: {
+    enableCRT: false,
+    enableScanlines: false,
+    enableFlicker: false,
+    terminalTheme: 'modern',
+  },
 };
 
 const UserPreferencesContext = createContext<UserPreferencesContextType | undefined>(undefined);
@@ -51,8 +64,17 @@ export const UserPreferencesProvider = ({ children }: { children: React.ReactNod
     }));
   };
 
+  const updateTheme = (theme: Partial<UserPreferences['theme']>) => {
+    setPreferences(prev => ({
+      ...prev,
+      theme: { ...prev.theme, ...theme },
+    }));
+  };
+
   return (
-    <UserPreferencesContext.Provider value={{ preferences, setLocation, toggleMetric, toggleFavorite }}>
+    <UserPreferencesContext.Provider 
+      value={{ preferences, setLocation, toggleMetric, toggleFavorite, updateTheme }}
+    >
       {children}
     </UserPreferencesContext.Provider>
   );
