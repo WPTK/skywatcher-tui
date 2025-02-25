@@ -1,16 +1,7 @@
 
 import { useEffect, useState } from "react";
 import { Plane } from "lucide-react";
-
-interface Aircraft {
-  id: string;
-  callsign: string;
-  altitude: number;
-  speed: number;
-  heading: number;
-  lat: number;
-  lon: number;
-}
+import type { Aircraft } from "@/pages/Index";
 
 const mockAircraft: Aircraft[] = [
   {
@@ -21,6 +12,8 @@ const mockAircraft: Aircraft[] = [
     heading: 270,
     lat: 51.5074,
     lon: -0.1278,
+    type: "B737-800",
+    isMilitary: false,
   },
   {
     id: "2",
@@ -30,15 +23,46 @@ const mockAircraft: Aircraft[] = [
     heading: 90,
     lat: 51.4700,
     lon: -0.4543,
+    type: "A320neo",
+    isMilitary: false,
+  },
+  {
+    id: "3",
+    callsign: "RCH285",
+    altitude: 31000,
+    speed: 480,
+    heading: 180,
+    lat: 51.6000,
+    lon: -0.2000,
+    type: "C-17A",
+    isMilitary: true,
   },
 ];
 
-export const AircraftList = ({ onSelect }: { onSelect: (aircraft: Aircraft) => void }) => {
+// Haversine formula to calculate distance between two points
+const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+  const R = 3959; // Radius of the Earth in miles
+  const dLat = (lat2 - lat1) * (Math.PI / 180);
+  const dLon = (lon2 - lon1) * (Math.PI / 180);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+};
+
+export const AircraftList = ({ 
+  onSelect,
+  userLocation
+}: { 
+  onSelect: (aircraft: Aircraft) => void;
+  userLocation: { lat: number; lon: number };
+}) => {
   const [aircraft, setAircraft] = useState<Aircraft[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
-    // Simulating real-time updates
     setAircraft(mockAircraft);
     const interval = setInterval(() => {
       setAircraft((prev) =>
@@ -73,9 +97,10 @@ export const AircraftList = ({ onSelect }: { onSelect: (aircraft: Aircraft) => v
         <thead>
           <tr>
             <th>Callsign</th>
+            <th>Type</th>
             <th>Altitude</th>
             <th>Speed</th>
-            <th>Heading</th>
+            <th>Distance</th>
           </tr>
         </thead>
         <tbody>
@@ -87,12 +112,20 @@ export const AircraftList = ({ onSelect }: { onSelect: (aircraft: Aircraft) => v
               style={{ animationDelay: `${index * 100}ms` }}
             >
               <td className="flex items-center gap-2">
-                <Plane size={16} />
+                <Plane size={16} className={a.isMilitary ? "text-red-500" : ""} />
                 {a.callsign}
               </td>
+              <td>{a.type}</td>
               <td>{a.altitude} ft</td>
-              <td>{a.speed} kts</td>
-              <td>{a.heading}°</td>
+              <td>{Math.round(a.speed * 1.15)} mph</td>
+              <td>
+                {calculateDistance(
+                  userLocation.lat,
+                  userLocation.lon,
+                  a.lat,
+                  a.lon
+                ).toFixed(1)} mi
+              </td>
             </tr>
           ))}
         </tbody>
