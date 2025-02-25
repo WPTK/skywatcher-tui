@@ -5,7 +5,6 @@ import { AircraftList } from "@/components/AircraftList";
 import { AircraftDetail } from "@/components/AircraftDetail";
 import { StatusBar } from "@/components/StatusBar";
 import { UserPreferencesProvider } from "@/contexts/UserPreferencesContext";
-import { SettingsMenu } from "@/components/Settings";
 
 export interface Aircraft {
   id: string;
@@ -28,11 +27,10 @@ const Index = () => {
   return (
     <UserPreferencesProvider>
       <div className="min-h-screen bg-background text-foreground">
-        <div className="terminal-window">
+        <div className="terminal-window min-h-screen">
           <TerminalHeader />
           <AircraftList onSelect={setSelectedAircraft} userLocation={userLocation} />
         </div>
-        <SettingsMenu />
         <AircraftDetail 
           aircraft={selectedAircraft} 
           onClose={() => setSelectedAircraft(null)} 

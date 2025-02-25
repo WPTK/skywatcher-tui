@@ -66,7 +66,7 @@ export const AircraftList = ({
   const [searchTerm, setSearchTerm] = useState("");
   const [sortField, setSortField] = useState<SortField>('distance');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
-  const { preferences, toggleVisualEffect } = useUserPreferences();
+  const { preferences } = useUserPreferences();
 
   useEffect(() => {
     const initialAircraft = mockAircraft.map(a => ({ ...a, previousAltitude: a.altitude }));
@@ -116,115 +116,75 @@ export const AircraftList = ({
 
   return (
     <div className="terminal-content">
-      <div className="flex flex-col gap-4 mb-4">
-        <div className="flex items-center">
-          <span className="terminal-prompt">╭── Search ──╮</span>
-          <input
-            type="text"
-            className={`terminal-input ${preferences.visualEffects.cursorBlink ? 'cursor-blink-enabled' : ''} 
-                       ${preferences.visualEffects.textGlow ? 'text-glow-enabled' : ''}`}
-            placeholder="search aircraft..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
-        <div className="flex flex-wrap gap-4 text-sm">
-          <label className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              checked={preferences.visualEffects.scanlines}
-              onChange={() => toggleVisualEffect('scanlines')}
-            />
-            Scanlines
-          </label>
-          <label className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              checked={preferences.visualEffects.textGlow}
-              onChange={() => toggleVisualEffect('textGlow')}
-            />
-            Text Glow
-          </label>
-          <label className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              checked={preferences.visualEffects.screenFlicker}
-              onChange={() => toggleVisualEffect('screenFlicker')}
-            />
-            Screen Flicker
-          </label>
-          <label className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              checked={preferences.visualEffects.cursorBlink}
-              onChange={() => toggleVisualEffect('cursorBlink')}
-            />
-            Cursor Blink
-          </label>
-        </div>
+      <div className="flex items-center mb-4">
+        <span className="terminal-prompt">$</span>
+        <input
+          type="text"
+          className="terminal-input"
+          placeholder="search aircraft..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
       </div>
-      <div className={`terminal-window ${preferences.visualEffects.scanlines ? 'scanlines-enabled' : ''} 
-                      ${preferences.visualEffects.screenFlicker ? 'flicker-enabled' : ''}`}>
-        <table className="terminal-table">
-          <thead>
-            <tr>
-              <th onClick={() => handleSort('callsign')} className="cursor-pointer hover:text-primary">
-                ┌─ Callsign ─┐ {sortField === 'callsign' && (sortDirection === 'asc' ? '↑' : '↓')}
-              </th>
-              <th>│ Type │</th>
-              <th onClick={() => handleSort('altitude')} className="cursor-pointer hover:text-primary">
-                │ Altitude │ {sortField === 'altitude' && (sortDirection === 'asc' ? '↑' : '↓')}
-              </th>
-              <th onClick={() => handleSort('speed')} className="cursor-pointer hover:text-primary">
-                │ Speed │ {sortField === 'speed' && (sortDirection === 'asc' ? '↑' : '↓')}
-              </th>
-              <th onClick={() => handleSort('distance')} className="cursor-pointer hover:text-primary">
-                └─ Distance ─┘ {sortField === 'distance' && (sortDirection === 'asc' ? '↑' : '↓')}
-              </th>
+      <table className="terminal-table">
+        <thead>
+          <tr>
+            <th onClick={() => handleSort('callsign')} className="cursor-pointer hover:text-primary">
+              Callsign {sortField === 'callsign' && (sortDirection === 'asc' ? '↑' : '↓')}
+            </th>
+            <th>Type</th>
+            <th onClick={() => handleSort('altitude')} className="cursor-pointer hover:text-primary">
+              Altitude {sortField === 'altitude' && (sortDirection === 'asc' ? '↑' : '↓')}
+            </th>
+            <th onClick={() => handleSort('speed')} className="cursor-pointer hover:text-primary">
+              Speed {sortField === 'speed' && (sortDirection === 'asc' ? '↑' : '↓')}
+            </th>
+            <th onClick={() => handleSort('distance')} className="cursor-pointer hover:text-primary">
+              Distance {sortField === 'distance' && (sortDirection === 'asc' ? '↑' : '↓')}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {sortedAircraft.map((a, index) => (
+            <tr
+              key={a.id}
+              onClick={() => onSelect(a)}
+              className={`terminal-line`}
+              style={{ animationDelay: `${index * 100}ms` }}
+            >
+              <td className="flex items-center gap-2">
+                <Plane size={16} className={a.isMilitary ? "text-red-500" : ""} />
+                {a.callsign}
+                {preferences.favoriteCallsigns.includes(a.callsign) && 
+                  <span className="text-primary">★</span>}
+              </td>
+              <td>{a.type}</td>
+              <td className="flex items-center gap-1">
+                {a.altitude} ft
+                {a.altitude > (a.previousAltitude || a.altitude) ? (
+                  <ArrowUp size={14} className="text-primary" />
+                ) : a.altitude < (a.previousAltitude || a.altitude) ? (
+                  <ArrowDown size={14} className="text-destructive" />
+                ) : null}
+              </td>
+              <td>{Math.round(a.speed * (preferences.useMetric ? 1.852 : 1.15))} {preferences.useMetric ? 'km/h' : 'mph'}</td>
+              <td className="flex items-center gap-2">
+                {calculateDistance(
+                  userLocation.lat,
+                  userLocation.lon,
+                  a.lat,
+                  a.lon
+                ).toFixed(1)} {preferences.useMetric ? 'km' : 'mi'}
+                <Navigation2 
+                  size={14} 
+                  className="text-muted-foreground"
+                  style={{ transform: `rotate(${a.heading}deg)` }}
+                />
+              </td>
             </tr>
-          </thead>
-          <tbody>
-            {sortedAircraft.map((a, index) => (
-              <tr
-                key={a.id}
-                onClick={() => onSelect(a)}
-                className={`terminal-line`}
-                style={{ animationDelay: `${index * 100}ms` }}
-              >
-                <td className="flex items-center gap-2">
-                  <Plane size={16} className={a.isMilitary ? "text-red-500" : ""} />
-                  {a.callsign}
-                  {preferences.favoriteCallsigns.includes(a.callsign) && 
-                    <span className="text-primary">★</span>}
-                </td>
-                <td>{a.type}</td>
-                <td className="flex items-center gap-1">
-                  {a.altitude} ft
-                  {a.altitude > (a.previousAltitude || a.altitude) ? (
-                    <ArrowUp size={14} className="text-primary" />
-                  ) : a.altitude < (a.previousAltitude || a.altitude) ? (
-                    <ArrowDown size={14} className="text-destructive" />
-                  ) : null}
-                </td>
-                <td>{Math.round(a.speed * (preferences.useMetric ? 1.852 : 1.15))} {preferences.useMetric ? 'km/h' : 'mph'}</td>
-                <td className="flex items-center gap-2">
-                  {calculateDistance(
-                    userLocation.lat,
-                    userLocation.lon,
-                    a.lat,
-                    a.lon
-                  ).toFixed(1)} {preferences.useMetric ? 'km' : 'mi'}
-                  <Navigation2 
-                    size={14} 
-                    className="text-muted-foreground"
-                    style={{ transform: `rotate(${a.heading}deg)` }}
-                  />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 };

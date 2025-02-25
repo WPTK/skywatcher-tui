@@ -6,26 +6,26 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 240 5.9% 10%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
-    --destructive: 0 84.2% 60.2%;
+    --background: 0 0% 0%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 3%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 3%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 120 100% 50%;
+    --primary-foreground: 0 0% 0%;
+    --secondary: 120 5% 15%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 120 5% 15%;
+    --muted-foreground: 0 0% 65%;
+    --accent: 120 5% 15%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 100% 50%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 240 5.9% 10%;
-    --radius: 1rem;
+    --border: 120 5% 15%;
+    --input: 120 5% 15%;
+    --ring: 120 100% 50%;
+    --radius: 0px;
   }
 }
 
@@ -34,20 +34,17 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground antialiased;
+    @apply bg-background text-foreground font-mono;
     font-family: 'JetBrains Mono', monospace;
   }
 }
 
 .terminal-window {
-  @apply bg-card border border-border rounded-lg p-4;
-  position: relative;
-  overflow: hidden;
+  @apply bg-card border border-border rounded-none p-4;
 }
 
 .terminal-header {
   @apply text-primary font-bold mb-4 flex items-center gap-2;
-  padding: 0.5rem;
 }
 
 .terminal-content {
@@ -68,17 +65,14 @@
 
 .terminal-table {
   @apply w-full border-collapse;
-  border: 1px solid hsl(var(--primary));
 }
 
 .terminal-table th {
   @apply text-left py-2 text-primary font-normal;
-  border-bottom: 1px solid hsl(var(--primary));
 }
 
 .terminal-table td {
   @apply py-1 text-muted-foreground;
-  border-bottom: 1px dashed hsl(var(--primary));
 }
 
 .terminal-table tr:hover td {
@@ -87,7 +81,6 @@
 
 .status-bar {
   @apply fixed bottom-0 left-0 right-0 bg-card border-t border-border px-4 py-2 text-sm text-muted-foreground;
-  border: 1px solid hsl(var(--primary));
 }
 
 @keyframes fade-in {
