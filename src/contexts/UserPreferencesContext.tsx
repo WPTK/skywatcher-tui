@@ -8,6 +8,12 @@ interface UserPreferences {
   };
   useMetric: boolean;
   favoriteCallsigns: string[];
+  visualEffects: {
+    scanlines: boolean;
+    textGlow: boolean;
+    screenFlicker: boolean;
+    cursorBlink: boolean;
+  };
 }
 
 interface UserPreferencesContextType {
@@ -15,12 +21,19 @@ interface UserPreferencesContextType {
   setLocation: (lat: number, lon: number) => void;
   toggleMetric: () => void;
   toggleFavorite: (callsign: string) => void;
+  toggleVisualEffect: (effect: keyof UserPreferences['visualEffects']) => void;
 }
 
 const defaultPreferences: UserPreferences = {
   location: { lat: 51.5074, lon: -0.1278 }, // Default to London
   useMetric: false,
   favoriteCallsigns: [],
+  visualEffects: {
+    scanlines: true,
+    textGlow: true,
+    screenFlicker: true,
+    cursorBlink: true,
+  },
 };
 
 const UserPreferencesContext = createContext<UserPreferencesContextType | undefined>(undefined);
@@ -51,8 +64,18 @@ export const UserPreferencesProvider = ({ children }: { children: React.ReactNod
     }));
   };
 
+  const toggleVisualEffect = (effect: keyof UserPreferences['visualEffects']) => {
+    setPreferences(prev => ({
+      ...prev,
+      visualEffects: {
+        ...prev.visualEffects,
+        [effect]: !prev.visualEffects[effect],
+      },
+    }));
+  };
+
   return (
-    <UserPreferencesContext.Provider value={{ preferences, setLocation, toggleMetric, toggleFavorite }}>
+    <UserPreferencesContext.Provider value={{ preferences, setLocation, toggleMetric, toggleFavorite, toggleVisualEffect }}>
       {children}
     </UserPreferencesContext.Provider>
   );
