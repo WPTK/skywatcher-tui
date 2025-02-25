@@ -24,20 +24,24 @@ const Index = () => {
   const [selectedAircraft, setSelectedAircraft] = useState<Aircraft | null>(null);
   const [userLocation, setUserLocation] = useState({ lat: 51.5074, lon: -0.1278 }); // Default to London
 
+  const content = (
+    <div className="min-h-screen bg-background text-foreground">
+      <div className="terminal-window min-h-screen">
+        <TerminalHeader />
+        <AircraftList onSelect={setSelectedAircraft} userLocation={userLocation} />
+      </div>
+      <AircraftDetail 
+        aircraft={selectedAircraft} 
+        onClose={() => setSelectedAircraft(null)} 
+        userLocation={userLocation}
+      />
+      <StatusBar />
+    </div>
+  );
+
   return (
     <UserPreferencesProvider>
-      <div className="min-h-screen bg-background text-foreground">
-        <div className="terminal-window min-h-screen">
-          <TerminalHeader />
-          <AircraftList onSelect={setSelectedAircraft} userLocation={userLocation} />
-        </div>
-        <AircraftDetail 
-          aircraft={selectedAircraft} 
-          onClose={() => setSelectedAircraft(null)} 
-          userLocation={userLocation}
-        />
-        <StatusBar />
-      </div>
+      {content}
     </UserPreferencesProvider>
   );
 };
