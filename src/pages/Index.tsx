@@ -5,6 +5,7 @@ import { AircraftList } from "@/components/AircraftList";
 import { AircraftDetail } from "@/components/AircraftDetail";
 import { StatusBar } from "@/components/StatusBar";
 import { UserPreferencesProvider } from "@/contexts/UserPreferencesContext";
+import { SettingsMenu } from "@/components/Settings";
 
 export interface Aircraft {
   id: string;
@@ -31,6 +32,7 @@ const Index = () => {
           <TerminalHeader />
           <AircraftList onSelect={setSelectedAircraft} userLocation={userLocation} />
         </div>
+        <SettingsMenu />
         <AircraftDetail 
           aircraft={selectedAircraft} 
           onClose={() => setSelectedAircraft(null)} 
@@ -43,4 +45,3 @@ const Index = () => {
 };
 
 export default Index;
-
