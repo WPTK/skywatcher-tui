@@ -1,18 +1,22 @@
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Settings, Monitor, MapPin } from "lucide-react";
+import { Settings, Monitor, MapPin, Tv, Film } from "lucide-react";
 import { useUserPreferences } from "@/contexts/UserPreferencesContext";
 
 const Preferences = () => {
   const navigate = useNavigate();
-  const { preferences, setLocation, toggleMetric } = useUserPreferences();
+  const { preferences, setLocation, toggleMetric, updateTheme } = useUserPreferences();
   const [lat, setLat] = useState(preferences.location.lat.toString());
   const [lon, setLon] = useState(preferences.location.lon.toString());
 
   const handleLocationSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setLocation(parseFloat(lat), parseFloat(lon));
+  };
+
+  const handleThemeChange = (key: keyof typeof preferences.theme, value: boolean | string) => {
+    updateTheme({ [key]: value });
   };
 
   return (
@@ -91,6 +95,72 @@ const Preferences = () => {
                   className="form-checkbox text-primary rounded-none border-primary"
                 />
                 <span>Use Metric Units (km/h, km)</span>
+              </label>
+            </div>
+          </section>
+
+          {/* Terminal Theme Settings */}
+          <section className="space-y-4">
+            <h2 className="text-xl text-primary flex items-center gap-2">
+              <Tv size={20} />
+              Terminal Theme
+            </h2>
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm text-muted-foreground mb-2 block">
+                    Terminal Color Theme
+                  </label>
+                  <select
+                    value={preferences.theme.terminalTheme}
+                    onChange={(e) => handleThemeChange('terminalTheme', e.target.value)}
+                    className="w-full bg-secondary text-foreground p-2 rounded-none border border-border"
+                  >
+                    <option value="modern">Modern</option>
+                    <option value="amber">Amber</option>
+                    <option value="green">Green</option>
+                    <option value="blue">Blue</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* CRT Effects Settings */}
+          <section className="space-y-4">
+            <h2 className="text-xl text-primary flex items-center gap-2">
+              <Film size={20} />
+              CRT Effects
+            </h2>
+            <div className="space-y-4">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={preferences.theme.enableCRT}
+                  onChange={(e) => handleThemeChange('enableCRT', e.target.checked)}
+                  className="form-checkbox text-primary rounded-none border-primary"
+                />
+                <span>Enable CRT Effect</span>
+              </label>
+              
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={preferences.theme.enableScanlines}
+                  onChange={(e) => handleThemeChange('enableScanlines', e.target.checked)}
+                  className="form-checkbox text-primary rounded-none border-primary"
+                />
+                <span>Enable Scanlines</span>
+              </label>
+              
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={preferences.theme.enableFlicker}
+                  onChange={(e) => handleThemeChange('enableFlicker', e.target.checked)}
+                  className="form-checkbox text-primary rounded-none border-primary"
+                />
+                <span>Enable Screen Flicker</span>
               </label>
             </div>
           </section>
