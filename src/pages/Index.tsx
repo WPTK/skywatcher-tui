@@ -20,6 +20,12 @@ export interface Aircraft {
   type: string;
   isMilitary: boolean;
   owner?: string;
+  // New properties
+  airline?: string;
+  airlineCode?: string;
+  model?: string;
+  modelCode?: string;
+  category?: string;
 }
 
 const Index = () => {

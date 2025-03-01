@@ -57,12 +57,18 @@ export const AircraftDetail = ({
         </button>
       </div>
       <div className="space-y-4">
+        {aircraft.airline && (
+          <div>
+            <div className="text-muted-foreground">Airline</div>
+            <div>{aircraft.airline} {aircraft.airlineCode ? `(${aircraft.airlineCode})` : ''}</div>
+          </div>
+        )}
         <div>
-          <div className="text-muted-foreground">Type</div>
-          <div>{aircraft.type}</div>
+          <div className="text-muted-foreground">Aircraft Type</div>
+          <div>{aircraft.model || aircraft.type}</div>
         </div>
         <div>
-          <div className="text-muted-foreground">Owner</div>
+          <div className="text-muted-foreground">Owner/Operator</div>
           <div>{aircraft.owner || 'Unknown'}</div>
         </div>
         <div>
@@ -103,6 +109,12 @@ export const AircraftDetail = ({
             />
           </div>
         </div>
+        {aircraft.category && (
+          <div>
+            <div className="text-muted-foreground">Category</div>
+            <div>{aircraft.category}</div>
+          </div>
+        )}
       </div>
     </div>
   );

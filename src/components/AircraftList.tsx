@@ -4,6 +4,7 @@ import { Plane, ArrowUp, ArrowDown, Navigation2 } from "lucide-react";
 import type { Aircraft } from "@/pages/Index";
 import { useUserPreferences } from "@/contexts/UserPreferencesContext";
 import { useQuery } from "@tanstack/react-query";
+import { aircraftModelsMap, airlinesMap, initializeDataMaps } from "@/utils/csvUtils";
 
 const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
   const R = 3959; // Radius of the Earth in miles
@@ -17,6 +18,30 @@ const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: numbe
   return R * c;
 };
 
+// Function to determine airline from callsign
+const getAirlineFromCallsign = (callsign: string): { name: string, icao: string } | null => {
+  // Airline codes are usually the first 3 characters of the callsign
+  const airlineCode = callsign.trim().substring(0, 3);
+  
+  // Check if we can find this airline code
+  for (const [icao, airline] of airlinesMap.entries()) {
+    if (airlineCode === airline.icao) {
+      return { name: airline.airlinename, icao };
+    }
+  }
+  
+  return null;
+};
+
+// Function to extract model designation from type string
+const getAircraftTypeInfo = (type: string): { model: string, name: string } => {
+  if (aircraftModelsMap.has(type)) {
+    const aircraft = aircraftModelsMap.get(type)!;
+    return { model: aircraft.ICAO, name: aircraft.model };
+  }
+  return { model: type, name: "Unknown" };
+};
+
 // Function to fetch aircraft data
 const fetchAircraftData = async () => {
   try {
@@ -28,19 +53,30 @@ const fetchAircraftData = async () => {
     
     // Transform the data into our Aircraft type format
     if (data && data.aircraft && Array.isArray(data.aircraft)) {
-      return data.aircraft.map((a: any) => ({
-        id: a.hex || String(Math.random()),
-        callsign: a.flight?.trim() || "N/A",
-        altitude: a.alt_baro || 0,
-        previousAltitude: a.alt_baro || 0,
-        speed: a.gs || 0, // ground speed
-        heading: a.track || 0,
-        lat: a.lat || 0,
-        lon: a.lon || 0,
-        type: a.t || "Unknown",
-        isMilitary: a.military === 1 || false,
-        owner: a.r || undefined
-      }));
+      return data.aircraft.map((a: any) => {
+        const callsign = a.flight?.trim() || "N/A";
+        const airline = getAirlineFromCallsign(callsign);
+        const typeInfo = getAircraftTypeInfo(a.t || "Unknown");
+        
+        return {
+          id: a.hex || String(Math.random()),
+          callsign,
+          altitude: a.alt_baro || 0,
+          previousAltitude: a.alt_baro || 0,
+          speed: a.gs || 0, // ground speed
+          heading: a.track || 0,
+          lat: a.lat || 0,
+          lon: a.lon || 0,
+          type: a.t || "Unknown",
+          isMilitary: a.military === 1 || false,
+          owner: a.r || undefined,
+          category: a.category || "",
+          airline: airline?.name || "Unknown",
+          airlineCode: airline?.icao || "",
+          model: typeInfo.name,
+          modelCode: typeInfo.model
+        };
+      });
     }
     return [];
   } catch (error) {
@@ -49,7 +85,7 @@ const fetchAircraftData = async () => {
   }
 };
 
-type SortField = 'distance' | 'altitude' | 'callsign' | 'speed';
+type SortField = 'distance' | 'altitude' | 'callsign' | 'speed' | 'airline';
 
 export const AircraftList = ({ 
   onSelect,
@@ -62,6 +98,11 @@ export const AircraftList = ({
   const [sortField, setSortField] = useState<SortField>('distance');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const { preferences } = useUserPreferences();
+  
+  // Initialize CSV data
+  useEffect(() => {
+    initializeDataMaps();
+  }, []);
 
   // Use react-query to fetch and cache the aircraft data
   const { data: aircraft = [], isLoading, error } = useQuery({
@@ -71,7 +112,13 @@ export const AircraftList = ({
   });
 
   const sortedAircraft = [...aircraft]
-    .filter((a) => a.callsign.toLowerCase().includes(searchTerm.toLowerCase()))
+    .filter((a) => {
+      if (!searchTerm) return true;
+      const term = searchTerm.toLowerCase();
+      return a.callsign.toLowerCase().includes(term) || 
+             a.airline?.toLowerCase().includes(term) || 
+             a.model?.toLowerCase().includes(term);
+    })
     .sort((a, b) => {
       const multiplier = sortDirection === 'asc' ? 1 : -1;
       switch (sortField) {
@@ -84,6 +131,8 @@ export const AircraftList = ({
           return (a.speed - b.speed) * multiplier;
         case 'callsign':
           return a.callsign.localeCompare(b.callsign) * multiplier;
+        case 'airline':
+          return (a.airline || "").localeCompare(b.airline || "") * multiplier;
         default:
           return 0;
       }
@@ -105,7 +154,7 @@ export const AircraftList = ({
         <input
           type="text"
           className="terminal-input"
-          placeholder="search aircraft..."
+          placeholder="search aircraft, airline, or model..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
@@ -129,6 +178,9 @@ export const AircraftList = ({
             <tr>
               <th onClick={() => handleSort('callsign')} className="cursor-pointer hover:text-primary">
                 Callsign {sortField === 'callsign' && (sortDirection === 'asc' ? '↑' : '↓')}
+              </th>
+              <th onClick={() => handleSort('airline')} className="cursor-pointer hover:text-primary">
+                Airline {sortField === 'airline' && (sortDirection === 'asc' ? '↑' : '↓')}
               </th>
               <th>Type</th>
               <th onClick={() => handleSort('altitude')} className="cursor-pointer hover:text-primary">
@@ -156,7 +208,8 @@ export const AircraftList = ({
                   {preferences.favoriteCallsigns.includes(a.callsign) && 
                     <span className="text-primary">★</span>}
                 </td>
-                <td>{a.type}</td>
+                <td>{a.airline || "N/A"}</td>
+                <td>{a.model || a.type}</td>
                 <td className="flex items-center gap-1">
                   {a.altitude} ft
                   {a.altitude > (a.previousAltitude || a.altitude) ? (
