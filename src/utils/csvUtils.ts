@@ -1,6 +1,6 @@
 
 // Function to fetch and parse a CSV file
-export const fetchCSV = async (filePath: string): Promise<Record<string, any>[]> => {
+export const fetchCSV = async (filePath: string): Promise<Record<string, string>[]> => {
   try {
     const response = await fetch(filePath);
     if (!response.ok) {
@@ -15,7 +15,7 @@ export const fetchCSV = async (filePath: string): Promise<Record<string, any>[]>
       .filter(line => line.trim() !== '')
       .map(line => {
         const values = line.split(',').map(v => v.trim());
-        const record: Record<string, any> = {};
+        const record: Record<string, string> = {};
         
         headers.forEach((header, index) => {
           record[header] = values[index] || '';
@@ -29,11 +29,24 @@ export const fetchCSV = async (filePath: string): Promise<Record<string, any>[]>
   }
 };
 
+// Define interface types to match the CSV structure
+interface AircraftModel {
+  model: string;
+  IATA: string;
+  ICAO: string;
+}
+
+interface Airline {
+  airlinename: string;
+  IATA: string;
+  icao: string;
+}
+
 // Map to store aircraft data (ICAO code to model/info)
-export const aircraftModelsMap = new Map<string, { model: string, IATA: string, ICAO: string }>();
+export const aircraftModelsMap = new Map<string, AircraftModel>();
 
 // Map to store airline data (ICAO code to airline info)
-export const airlinesMap = new Map<string, { airlinename: string, IATA: string, icao: string }>();
+export const airlinesMap = new Map<string, Airline>();
 
 // Function to initialize the data maps
 export const initializeDataMaps = async () => {
@@ -42,7 +55,12 @@ export const initializeDataMaps = async () => {
     const aircraftModels = await fetchCSV('/aircraft-models.csv');
     aircraftModels.forEach(model => {
       if (model.ICAO) {
-        aircraftModelsMap.set(model.ICAO, model);
+        // Ensure we're casting the record to the correct interface
+        aircraftModelsMap.set(model.ICAO, {
+          model: model.model || '',
+          IATA: model.IATA || '',
+          ICAO: model.ICAO || ''
+        });
       }
     });
     
@@ -50,7 +68,12 @@ export const initializeDataMaps = async () => {
     const airlines = await fetchCSV('/airlines.csv');
     airlines.forEach(airline => {
       if (airline.icao) {
-        airlinesMap.set(airline.icao, airline);
+        // Ensure we're casting the record to the correct interface
+        airlinesMap.set(airline.icao, {
+          airlinename: airline.airlinename || '',
+          IATA: airline.IATA || '',
+          icao: airline.icao || ''
+        });
       }
     });
     
