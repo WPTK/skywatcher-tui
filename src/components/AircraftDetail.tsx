@@ -1,5 +1,4 @@
-
-import { X, Navigation2, ArrowUp, ArrowDown, Star } from "lucide-react";
+import { X, Navigation2, ArrowUp, ArrowDown, Star, ExternalLink } from "lucide-react";
 import type { Aircraft } from "@/pages/Index";
 import { useUserPreferences } from "@/contexts/UserPreferencesContext";
 
@@ -36,6 +35,8 @@ export const AircraftDetail = ({
   );
 
   const isFavorite = preferences.favoriteCallsigns.includes(aircraft.callsign);
+  
+  const adsbExchangeUrl = `https://globe.adsbexchange.com/?icao=${aircraft.id}`;
 
   return (
     <div className={`aircraft-detail ${!aircraft ? "closed" : ""}`}>
@@ -57,6 +58,22 @@ export const AircraftDetail = ({
         </button>
       </div>
       <div className="space-y-4">
+        <div>
+          <div className="text-muted-foreground">ICAO Hex</div>
+          <div className="flex items-center gap-2">
+            <span>{aircraft.id}</span>
+            <a 
+              href={adsbExchangeUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:text-primary/80 inline-flex items-center"
+              title="View on ADSBExchange"
+            >
+              <ExternalLink size={14} />
+              <span className="ml-1">View on ADSBExchange</span>
+            </a>
+          </div>
+        </div>
         {aircraft.airline && (
           <div>
             <div className="text-muted-foreground">Airline</div>

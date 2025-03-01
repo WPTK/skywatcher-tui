@@ -9,7 +9,7 @@ import { Link } from "react-router-dom";
 import { Settings } from "lucide-react";
 
 export interface Aircraft {
-  id: string;
+  id: string;  // ICAO hex code (24-bit address) of the aircraft
   callsign: string;
   altitude: number;
   previousAltitude?: number;
