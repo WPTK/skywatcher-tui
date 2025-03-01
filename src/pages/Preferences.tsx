@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Settings, Monitor, MapPin, Tv, Film, Save } from "lucide-react";
+import { Settings, Monitor, MapPin, Tv, Film, Save, Compass } from "lucide-react";
 import { useUserPreferences } from "@/contexts/UserPreferencesContext";
 import { toast } from "@/components/ui/use-toast";
 
@@ -9,14 +9,16 @@ import { toast } from "@/components/ui/use-toast";
  * User preferences page
  * Allows configuring:
  * - Location coordinates
+ * - Maximum radius for aircraft display
  * - Unit preferences (metric/imperial)
  * - Terminal theme and CRT effects
  */
 const Preferences = () => {
   const navigate = useNavigate();
-  const { preferences, setLocation, toggleMetric, updateTheme } = useUserPreferences();
+  const { preferences, setLocation, setMaxRadius, toggleMetric, updateTheme } = useUserPreferences();
   const [lat, setLat] = useState(preferences.location.lat.toString());
   const [lon, setLon] = useState(preferences.location.lon.toString());
+  const [radius, setRadius] = useState(preferences.maxRadius.toString());
 
   const handleLocationSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,6 +59,24 @@ const Preferences = () => {
       title: "Location Updated",
       description: `Coordinates saved: ${latNum.toFixed(4)}, ${lonNum.toFixed(4)}`,
     });
+  };
+
+  const handleRadiusSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Validate radius
+    const radiusNum = parseFloat(radius);
+    
+    if (isNaN(radiusNum) || radiusNum <= 0) {
+      toast({
+        title: "Invalid Radius",
+        description: "Please enter a positive number for the radius",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setMaxRadius(radiusNum);
   };
 
   const handleThemeChange = (key: keyof typeof preferences.theme, value: boolean | string) => {
@@ -132,6 +152,39 @@ const Preferences = () => {
               >
                 <Save size={16} />
                 Update Location
+              </button>
+            </form>
+          </section>
+
+          {/* Radius Settings */}
+          <section className="space-y-4">
+            <h2 className="text-xl text-primary flex items-center gap-2">
+              <Compass size={20} />
+              Radius Settings
+            </h2>
+            <form onSubmit={handleRadiusSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <label htmlFor="radius" className="text-sm text-muted-foreground">
+                  Maximum Radius ({preferences.useMetric ? 'kilometers' : 'miles'})
+                </label>
+                <input
+                  id="radius"
+                  type="text"
+                  value={radius}
+                  onChange={(e) => setRadius(e.target.value)}
+                  className="w-full bg-secondary text-foreground p-2 rounded-none border border-border"
+                  placeholder="Enter radius..."
+                />
+                <p className="text-xs text-muted-foreground">
+                  Only aircraft within this distance from your location will be displayed
+                </p>
+              </div>
+              <button
+                type="submit"
+                className="bg-primary text-primary-foreground px-4 py-2 hover:bg-primary/90 flex items-center gap-2"
+              >
+                <Save size={16} />
+                Update Radius
               </button>
             </form>
           </section>

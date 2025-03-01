@@ -160,14 +160,30 @@ export const AircraftList = ({
     }
   }, [isError, error]);
 
-  const sortedAircraft = [...aircraft]
-    .filter((a) => {
-      if (!searchTerm) return true;
-      const term = searchTerm.toLowerCase();
-      return a.callsign.toLowerCase().includes(term) || 
-             a.airline?.toLowerCase().includes(term) || 
-             a.model?.toLowerCase().includes(term);
-    })
+  // Filter aircraft by distance and search term
+  const filteredAircraft = aircraft.filter((a) => {
+    // Calculate distance from user location to aircraft
+    const distance = calculateDistance(
+      userLocation.lat, 
+      userLocation.lon, 
+      a.lat, 
+      a.lon
+    );
+    
+    // Filter by maximum radius first
+    if (distance > preferences.maxRadius) {
+      return false;
+    }
+    
+    // Then filter by search term if provided
+    if (!searchTerm) return true;
+    const term = searchTerm.toLowerCase();
+    return a.callsign.toLowerCase().includes(term) || 
+           a.airline?.toLowerCase().includes(term) || 
+           a.model?.toLowerCase().includes(term);
+  });
+
+  const sortedAircraft = [...filteredAircraft]
     .sort((a, b) => {
       const multiplier = sortDirection === 'asc' ? 1 : -1;
       switch (sortField) {
@@ -288,6 +304,13 @@ export const AircraftList = ({
             ))}
           </tbody>
         </table>
+      )}
+      
+      {/* Show how many aircraft were filtered by distance */}
+      {!isLoading && !isError && aircraft.length > 0 && (
+        <div className="text-sm text-muted-foreground mt-2">
+          Showing {sortedAircraft.length} of {aircraft.length} aircraft within {preferences.maxRadius} {preferences.useMetric ? 'km' : 'miles'}
+        </div>
       )}
     </div>
   );

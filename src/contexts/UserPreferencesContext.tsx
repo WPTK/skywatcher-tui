@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { toast } from "@/components/ui/use-toast";
 
@@ -7,6 +6,7 @@ interface UserPreferences {
     lat: number;
     lon: number;
   };
+  maxRadius: number; // Maximum distance in miles to display aircraft
   useMetric: boolean;
   favoriteCallsigns: string[];
   theme: {
@@ -20,6 +20,7 @@ interface UserPreferences {
 interface UserPreferencesContextType {
   preferences: UserPreferences;
   setLocation: (lat: number, lon: number) => void;
+  setMaxRadius: (radius: number) => void;
   toggleMetric: () => void;
   toggleFavorite: (callsign: string) => void;
   updateTheme: (theme: Partial<UserPreferences['theme']>) => void;
@@ -28,6 +29,7 @@ interface UserPreferencesContextType {
 // Default preferences if none are saved
 const defaultPreferences: UserPreferences = {
   location: { lat: 30.802, lon: -81.6159828 }, // Default coordinates
+  maxRadius: 60, // Default 60 miles radius
   useMetric: false,
   favoriteCallsigns: [],
   theme: {
@@ -80,6 +82,17 @@ export const UserPreferencesProvider = ({ children }: { children: React.ReactNod
     });
   };
 
+  const setMaxRadius = (radius: number) => {
+    setPreferences(prev => ({
+      ...prev,
+      maxRadius: radius,
+    }));
+    toast({
+      title: "Radius Updated",
+      description: `Aircraft will now be shown within ${radius} ${preferences.useMetric ? 'km' : 'miles'} of your location`,
+    });
+  };
+
   const toggleMetric = () => {
     setPreferences(prev => ({
       ...prev,
@@ -109,7 +122,7 @@ export const UserPreferencesProvider = ({ children }: { children: React.ReactNod
 
   return (
     <UserPreferencesContext.Provider 
-      value={{ preferences, setLocation, toggleMetric, toggleFavorite, updateTheme }}
+      value={{ preferences, setLocation, setMaxRadius, toggleMetric, toggleFavorite, updateTheme }}
     >
       {children}
     </UserPreferencesContext.Provider>
