@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Settings, Monitor, MapPin, Tv, Film, Save, Compass } from "lucide-react";
 import { useUserPreferences } from "@/contexts/UserPreferencesContext";
@@ -16,12 +15,19 @@ import { toast } from "@/components/ui/use-toast";
 const Preferences = () => {
   const navigate = useNavigate();
   const { preferences, setLocation, setMaxRadius, toggleMetric, updateTheme, getThemeClass } = useUserPreferences();
-  const [lat, setLat] = useState(preferences.location.lat.toString());
-  const [lon, setLon] = useState(preferences.location.lon.toString());
-  const [radius, setRadius] = useState(preferences.maxRadius.toString());
-
-  // Get theme classes
+  const [lat, setLat] = useState('');
+  const [lon, setLon] = useState('');
+  const [radius, setRadius] = useState('');
   const themeClasses = getThemeClass();
+
+  // Initialize form values from preferences when component mounts
+  useEffect(() => {
+    if (preferences) {
+      setLat(preferences.location?.lat?.toString() || '30.802');
+      setLon(preferences.location?.lon?.toString() || '-81.6159828');
+      setRadius(preferences.maxRadius?.toString() || '60');
+    }
+  }, [preferences]);
 
   const handleLocationSubmit = (e: React.FormEvent) => {
     e.preventDefault();

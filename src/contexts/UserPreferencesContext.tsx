@@ -25,7 +25,7 @@ interface UserPreferencesContextType {
   toggleMetric: () => void;
   toggleFavorite: (callsign: string) => void;
   updateTheme: (theme: Partial<UserPreferences['theme']>) => void;
-  getThemeClass: () => string; // New helper function to get theme classes
+  getThemeClass: () => string; // Helper function to get theme classes
 }
 
 // Default preferences if none are saved
@@ -57,7 +57,20 @@ export const UserPreferencesProvider = ({ children }: { children: React.ReactNod
   const [preferences, setPreferences] = useState<UserPreferences>(() => {
     try {
       const savedPrefs = localStorage.getItem(STORAGE_KEY);
-      return savedPrefs ? JSON.parse(savedPrefs) : defaultPreferences;
+      // Ensure we have all required properties by merging with defaults
+      if (savedPrefs) {
+        const parsed = JSON.parse(savedPrefs);
+        return {
+          ...defaultPreferences, // Start with all defaults
+          ...parsed, // Override with saved values
+          // Ensure nested objects are properly merged
+          theme: {
+            ...defaultPreferences.theme,
+            ...(parsed.theme || {})
+          }
+        };
+      }
+      return defaultPreferences;
     } catch (error) {
       console.error('Error loading saved preferences:', error);
       return defaultPreferences;
