@@ -18,7 +18,7 @@ const App = () => {
         <UserPreferencesProvider>
           <Toaster />
           <Sonner />
-          <BrowserRouter>
+          <BrowserRouter basename="/tracker">
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/preferences" element={<Preferences />} />

@@ -25,7 +25,7 @@ interface UserPreferencesContextType {
 }
 
 const defaultPreferences: UserPreferences = {
-  location: { lat: 51.5074, lon: -0.1278 }, // Default to London
+  location: { lat: 30.802, lon: -81.6159828 }, // Updated to user's coordinates
   useMetric: false,
   favoriteCallsigns: [],
   theme: {
