@@ -1,9 +1,17 @@
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Settings, Monitor, MapPin, Tv, Film } from "lucide-react";
+import { Settings, Monitor, MapPin, Tv, Film, Save } from "lucide-react";
 import { useUserPreferences } from "@/contexts/UserPreferencesContext";
+import { toast } from "@/components/ui/use-toast";
 
+/**
+ * User preferences page
+ * Allows configuring:
+ * - Location coordinates
+ * - Unit preferences (metric/imperial)
+ * - Terminal theme and CRT effects
+ */
 const Preferences = () => {
   const navigate = useNavigate();
   const { preferences, setLocation, toggleMetric, updateTheme } = useUserPreferences();
@@ -12,11 +20,58 @@ const Preferences = () => {
 
   const handleLocationSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setLocation(parseFloat(lat), parseFloat(lon));
+    
+    // Validate coordinates
+    const latNum = parseFloat(lat);
+    const lonNum = parseFloat(lon);
+    
+    if (isNaN(latNum) || isNaN(lonNum)) {
+      toast({
+        title: "Invalid Coordinates",
+        description: "Please enter valid numbers for latitude and longitude",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (latNum < -90 || latNum > 90) {
+      toast({
+        title: "Invalid Latitude",
+        description: "Latitude must be between -90 and 90 degrees",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (lonNum < -180 || lonNum > 180) {
+      toast({
+        title: "Invalid Longitude",
+        description: "Longitude must be between -180 and 180 degrees",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setLocation(latNum, lonNum);
+    toast({
+      title: "Location Updated",
+      description: `Coordinates saved: ${latNum.toFixed(4)}, ${lonNum.toFixed(4)}`,
+    });
   };
 
   const handleThemeChange = (key: keyof typeof preferences.theme, value: boolean | string) => {
     updateTheme({ [key]: value });
+    
+    // Show feedback for theme changes
+    const readableKey = key
+      .replace(/([A-Z])/g, ' $1')
+      .replace(/^./, (str) => str.toUpperCase())
+      .replace('CRT', 'CRT');
+      
+    toast({
+      title: `${readableKey} Updated`,
+      description: `New setting: ${typeof value === 'boolean' ? (value ? 'Enabled' : 'Disabled') : value}`,
+    });
   };
 
   return (
@@ -46,7 +101,7 @@ const Preferences = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label htmlFor="latitude" className="text-sm text-muted-foreground">
-                    Latitude
+                    Latitude (-90 to 90)
                   </label>
                   <input
                     id="latitude"
@@ -59,7 +114,7 @@ const Preferences = () => {
                 </div>
                 <div className="space-y-2">
                   <label htmlFor="longitude" className="text-sm text-muted-foreground">
-                    Longitude
+                    Longitude (-180 to 180)
                   </label>
                   <input
                     id="longitude"
@@ -73,8 +128,9 @@ const Preferences = () => {
               </div>
               <button
                 type="submit"
-                className="bg-primary text-primary-foreground px-4 py-2 hover:bg-primary/90"
+                className="bg-primary text-primary-foreground px-4 py-2 hover:bg-primary/90 flex items-center gap-2"
               >
+                <Save size={16} />
                 Update Location
               </button>
             </form>

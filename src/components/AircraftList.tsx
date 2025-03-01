@@ -1,11 +1,22 @@
 
 import { useEffect, useState } from "react";
-import { Plane, ArrowUp, ArrowDown, Navigation2 } from "lucide-react";
+import { Plane, ArrowUp, ArrowDown, Navigation2, AlertCircle } from "lucide-react";
 import type { Aircraft } from "@/pages/Index";
 import { useUserPreferences } from "@/contexts/UserPreferencesContext";
 import { useQuery } from "@tanstack/react-query";
 import { aircraftModelsMap, airlinesMap, initializeDataMaps } from "@/utils/csvUtils";
+import config from "@/config/appConfig";
+import { toast } from "@/components/ui/use-toast";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
+/**
+ * Calculates the distance between two coordinates using the Haversine formula
+ * @param lat1 Latitude of first point
+ * @param lon1 Longitude of first point
+ * @param lat2 Latitude of second point
+ * @param lon2 Longitude of second point
+ * @returns Distance in miles
+ */
 const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
   const R = 3959; // Radius of the Earth in miles
   const dLat = (lat2 - lat1) * (Math.PI / 180);
@@ -18,7 +29,11 @@ const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: numbe
   return R * c;
 };
 
-// Function to determine airline from callsign
+/**
+ * Determines airline information from the callsign using the loaded airline data
+ * @param callsign Aircraft callsign
+ * @returns Airline information or null if not found
+ */
 const getAirlineFromCallsign = (callsign: string): { name: string, icao: string } | null => {
   // Airline codes are usually the first 3 characters of the callsign
   const airlineCode = callsign.trim().substring(0, 3);
@@ -33,7 +48,11 @@ const getAirlineFromCallsign = (callsign: string): { name: string, icao: string 
   return null;
 };
 
-// Function to extract model designation from type string
+/**
+ * Extracts aircraft type information from the type code
+ * @param type Aircraft type code
+ * @returns Aircraft model information
+ */
 const getAircraftTypeInfo = (type: string): { model: string, name: string } => {
   if (aircraftModelsMap.has(type)) {
     const aircraft = aircraftModelsMap.get(type)!;
@@ -42,13 +61,20 @@ const getAircraftTypeInfo = (type: string): { model: string, name: string } => {
   return { model: type, name: "Unknown" };
 };
 
-// Function to fetch aircraft data
+/**
+ * Fetches aircraft data from the API
+ * Uses the configured API URL from appConfig
+ */
 const fetchAircraftData = async () => {
   try {
-    const response = await fetch("http://192.168.3.200/run/readsb/aircraft.json");
+    const url = `${config.readsbApiUrl}/aircraft.json`;
+    console.log(`Fetching aircraft data from: ${url}`);
+    
+    const response = await fetch(url);
     if (!response.ok) {
-      throw new Error("Network response was not ok");
+      throw new Error(`Server responded with status: ${response.status}`);
     }
+    
     const data = await response.json();
     
     // Transform the data into our Aircraft type format
@@ -81,19 +107,24 @@ const fetchAircraftData = async () => {
     return [];
   } catch (error) {
     console.error("Error fetching aircraft data:", error);
-    return [];
+    throw error; // Let react-query handle the error
   }
 };
 
 type SortField = 'distance' | 'altitude' | 'callsign' | 'speed' | 'airline';
 
+interface AircraftListProps {
+  onSelect: (aircraft: Aircraft) => void;
+  userLocation: { lat: number; lon: number };
+}
+
+/**
+ * AircraftList component displays a sortable, filterable list of aircraft
+ */
 export const AircraftList = ({ 
   onSelect,
   userLocation
-}: { 
-  onSelect: (aircraft: Aircraft) => void;
-  userLocation: { lat: number; lon: number };
-}) => {
+}: AircraftListProps) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortField, setSortField] = useState<SortField>('distance');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
@@ -105,11 +136,29 @@ export const AircraftList = ({
   }, []);
 
   // Use react-query to fetch and cache the aircraft data
-  const { data: aircraft = [], isLoading, error } = useQuery({
+  const { 
+    data: aircraft = [], 
+    isLoading, 
+    error, 
+    isError 
+  } = useQuery({
     queryKey: ['aircraftData'],
     queryFn: fetchAircraftData,
-    refetchInterval: 5000, // Refetch every 5 seconds
+    refetchInterval: config.aircraftRefreshInterval,
+    retry: 3,
+    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 30000), // Exponential backoff
   });
+
+  // Show an error toast when the API request fails
+  useEffect(() => {
+    if (isError && error) {
+      toast({
+        title: "Connection Error",
+        description: "Could not connect to the aircraft data source. Check your network connection.",
+        variant: "destructive",
+      });
+    }
+  }, [isError, error]);
 
   const sortedAircraft = [...aircraft]
     .filter((a) => {
@@ -162,13 +211,16 @@ export const AircraftList = ({
       
       {isLoading && <div className="text-primary">Loading aircraft data...</div>}
       
-      {error && (
-        <div className="text-destructive">
-          Error loading aircraft data. Check your connection to http://192.168.3.200
-        </div>
+      {isError && (
+        <Alert variant="destructive" className="mb-4">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            Error connecting to {config.readsbApiUrl}. Check your network connection or server configuration.
+          </AlertDescription>
+        </Alert>
       )}
       
-      {!isLoading && !error && aircraft.length === 0 && (
+      {!isLoading && !isError && aircraft.length === 0 && (
         <div className="text-primary">No aircraft data available</div>
       )}
       
