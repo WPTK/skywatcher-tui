@@ -107,7 +107,7 @@
 
 .crt-effect::before {
   content: "";
-  @apply absolute inset-0 pointer-events-none;
+  @apply absolute inset-0 pointer-events-none z-10;
   background: linear-gradient(
     to bottom,
     transparent 50%,
@@ -123,7 +123,7 @@
 
 .scanlines::before {
   content: "";
-  @apply absolute inset-0 pointer-events-none;
+  @apply absolute inset-0 pointer-events-none z-10;
   background: repeating-linear-gradient(
     to bottom,
     transparent 0%,

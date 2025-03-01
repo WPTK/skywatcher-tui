@@ -15,10 +15,13 @@ import { toast } from "@/components/ui/use-toast";
  */
 const Preferences = () => {
   const navigate = useNavigate();
-  const { preferences, setLocation, setMaxRadius, toggleMetric, updateTheme } = useUserPreferences();
+  const { preferences, setLocation, setMaxRadius, toggleMetric, updateTheme, getThemeClass } = useUserPreferences();
   const [lat, setLat] = useState(preferences.location.lat.toString());
   const [lon, setLon] = useState(preferences.location.lon.toString());
   const [radius, setRadius] = useState(preferences.maxRadius.toString());
+
+  // Get theme classes
+  const themeClasses = getThemeClass();
 
   const handleLocationSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -95,7 +98,7 @@ const Preferences = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className={`min-h-screen bg-background text-foreground ${themeClasses}`}>
       <div className="terminal-window min-h-screen p-8">
         <div className="mb-8 flex items-center justify-between">
           <h1 className="text-2xl font-bold text-primary flex items-center gap-2">
@@ -222,7 +225,7 @@ const Preferences = () => {
                   </label>
                   <select
                     value={preferences.theme.terminalTheme}
-                    onChange={(e) => handleThemeChange('terminalTheme', e.target.value)}
+                    onChange={(e) => handleThemeChange('terminalTheme', e.target.value as any)}
                     className="w-full bg-secondary text-foreground p-2 rounded-none border border-border"
                   >
                     <option value="modern">Modern</option>

@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { toast } from "@/components/ui/use-toast";
 
@@ -24,6 +25,7 @@ interface UserPreferencesContextType {
   toggleMetric: () => void;
   toggleFavorite: (callsign: string) => void;
   updateTheme: (theme: Partial<UserPreferences['theme']>) => void;
+  getThemeClass: () => string; // New helper function to get theme classes
 }
 
 // Default preferences if none are saved
@@ -120,9 +122,44 @@ export const UserPreferencesProvider = ({ children }: { children: React.ReactNod
     }));
   };
 
+  // Helper function to get the appropriate CSS classes based on theme settings
+  const getThemeClass = () => {
+    const classes: string[] = [];
+    
+    // Add terminal theme class
+    if (preferences.theme.terminalTheme !== 'modern') {
+      classes.push(`theme-${preferences.theme.terminalTheme}`);
+    }
+    
+    // Add CRT effect class if enabled
+    if (preferences.theme.enableCRT) {
+      classes.push('crt-effect');
+    }
+    
+    // Add scanlines class if enabled
+    if (preferences.theme.enableScanlines) {
+      classes.push('scanlines');
+    }
+    
+    // Add screen flicker class if enabled
+    if (preferences.theme.enableFlicker) {
+      classes.push('screen-flicker');
+    }
+    
+    return classes.join(' ');
+  };
+
   return (
     <UserPreferencesContext.Provider 
-      value={{ preferences, setLocation, setMaxRadius, toggleMetric, toggleFavorite, updateTheme }}
+      value={{ 
+        preferences, 
+        setLocation, 
+        setMaxRadius, 
+        toggleMetric, 
+        toggleFavorite, 
+        updateTheme,
+        getThemeClass
+      }}
     >
       {children}
     </UserPreferencesContext.Provider>
