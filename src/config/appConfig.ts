@@ -24,6 +24,7 @@ interface AppConfig {
 const devConfig: AppConfig = {
   readsbApiUrl: "http://192.168.3.200/run/readsb",
   csvPaths: {
+    // These paths are relative to the public folder
     aircraftModels: "/aircraft-models.csv",
     airlines: "/airlines.csv",
   },
@@ -34,6 +35,7 @@ const devConfig: AppConfig = {
 const prodConfig: AppConfig = {
   readsbApiUrl: "/run/readsb", // Relative path when hosted on same server
   csvPaths: {
+    // These paths are relative to the web server root
     aircraftModels: "/tracker/aircraft-models.csv",
     airlines: "/tracker/airlines.csv",
   },

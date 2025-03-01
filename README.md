@@ -29,9 +29,12 @@ A retro-terminal style aircraft tracking application that displays real-time air
 
 ## Required CSV Data Files
 
-The application requires two CSV files to be placed in the `public` folder:
+The application requires two CSV files with specific formats:
 
-### 1. `aircraft-models.csv`
+### 1. Aircraft Models CSV File
+
+**Development:** Place file at `public/aircraft-models.csv`
+**Production:** Place file at `/tracker/aircraft-models.csv` on your web server
 
 This file should contain aircraft model information with the following columns:
 - `model`: Full name of the aircraft model (e.g., "Boeing 737-800")
@@ -46,7 +49,10 @@ Airbus A320,320,A320
 Cessna 172,C72,C172
 ```
 
-### 2. `airlines.csv`
+### 2. Airlines CSV File
+
+**Development:** Place file at `public/airlines.csv`
+**Production:** Place file at `/tracker/airlines.csv` on your web server
 
 This file should contain airline information with the following columns:
 - `airlinename`: Full name of the airline (e.g., "American Airlines")
@@ -65,8 +71,10 @@ United Airlines,UA,UAL
 
 The application can be configured by modifying the `src/config/appConfig.ts` file:
 
-- `readsbApiUrl`: URL to your readsb/dump1090 API (default: "http://192.168.3.200/run/readsb")
-- `csvPaths`: Paths to the CSV data files
+- `readsbApiUrl`: URL to your readsb/dump1090 API
+  - Development default: "http://192.168.3.200/run/readsb"
+  - Production default: "/run/readsb" (relative path when hosted on same server)
+- `csvPaths`: Paths to the CSV data files (see above for details)
 - `aircraftRefreshInterval`: How often to refresh aircraft data (in milliseconds)
 
 ## Deployment to adsb.cc/tracker
@@ -87,11 +95,15 @@ To deploy to adsb.cc/tracker:
 
 ## Troubleshooting
 
-If you encounter issues:
+If you encounter issues with data not displaying:
 
 1. Check the browser console for errors
 2. Verify your readsb/dump1090 server is accessible
-3. Confirm the CSV files are in the correct location
+3. **CSV File Issues:**
+   - Confirm the CSV files are in the correct location (public folder for development)
+   - Check that the file names match exactly: `aircraft-models.csv` and `airlines.csv`
+   - Verify the CSV files have the correct column headers as described above
+   - Make sure the CSV files use proper CSV formatting (commas as separators, no extra spaces)
 4. Check that the `readsbApiUrl` in `appConfig.ts` is correctly configured
 
 ## License

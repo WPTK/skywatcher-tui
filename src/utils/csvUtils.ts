@@ -9,14 +9,28 @@ import { toast } from "@/components/ui/use-toast";
  */
 export const fetchCSV = async (filePath: string): Promise<Record<string, string>[]> => {
   try {
+    console.log(`Attempting to fetch CSV file from: ${filePath}`);
     const response = await fetch(filePath);
+    
     if (!response.ok) {
-      throw new Error(`Failed to fetch CSV: ${response.statusText}`);
+      const errorMsg = `Failed to fetch CSV: ${response.statusText} (${response.status})`;
+      console.error(errorMsg);
+      throw new Error(errorMsg);
     }
     
     const text = await response.text();
+    // Check if we got HTML instead of CSV (which indicates the file wasn't found)
+    if (text.trim().startsWith('<!DOCTYPE html>') || text.includes('<html')) {
+      throw new Error(`CSV file not found at ${filePath}. Got HTML instead.`);
+    }
+    
     const lines = text.split('\n');
+    if (lines.length < 2) {
+      throw new Error(`CSV file at ${filePath} appears to be empty or malformed.`);
+    }
+    
     const headers = lines[0].split(',').map(h => h.trim());
+    console.log(`Successfully loaded CSV headers: ${headers.join(', ')}`);
     
     return lines.slice(1)
       .filter(line => line.trim() !== '')
@@ -34,7 +48,7 @@ export const fetchCSV = async (filePath: string): Promise<Record<string, string>
     console.error('Error fetching CSV:', error);
     toast({
       title: "CSV Data Error",
-      description: `Failed to load data from ${filePath}. Check console for details.`,
+      description: `Failed to load data from ${filePath}. Please check that the CSV files are in the correct location: public folder for development or /tracker folder in production.`,
       variant: "destructive"
     });
     return [];
@@ -62,16 +76,14 @@ export const airlinesMap = new Map<string, Airline>();
 
 /**
  * Initializes data maps by loading CSV files
- * - Aircraft models data contains model names, ICAO and IATA codes
- * - Airlines data contains airline names and codes
- * 
- * CSV files should be placed in the public folder:
- * - public/aircraft-models.csv (or public/tracker/aircraft-models.csv in production)
- * - public/airlines.csv (or public/tracker/airlines.csv in production)
  */
 export const initializeDataMaps = async () => {
   try {
     console.log("Loading CSV data from:", config.csvPaths);
+    console.log("Current environment:", import.meta.env.PROD ? "production" : "development");
+    console.log("Make sure CSV files are in the correct location:");
+    console.log("- Development: public/aircraft-models.csv and public/airlines.csv");
+    console.log("- Production: /tracker/aircraft-models.csv and /tracker/airlines.csv");
     
     // Load aircraft models
     const aircraftModels = await fetchCSV(config.csvPaths.aircraftModels);
@@ -80,7 +92,7 @@ export const initializeDataMaps = async () => {
     aircraftModels.forEach(record => {
       if (record.ICAO) {
         // Create a properly typed AircraftModel object
-        const model: AircraftModel = {
+        const model = {
           model: record.model || 'Unknown',
           IATA: record.IATA || '',
           ICAO: record.ICAO || ''
@@ -98,7 +110,7 @@ export const initializeDataMaps = async () => {
     airlines.forEach(record => {
       if (record.icao) {
         // Create a properly typed Airline object
-        const airline: Airline = {
+        const airline = {
           airlinename: record.airlinename || 'Unknown',
           IATA: record.IATA || '',
           icao: record.icao || ''
@@ -114,7 +126,7 @@ export const initializeDataMaps = async () => {
     if (aircraftCount === 0 || airlineCount === 0) {
       toast({
         title: "Warning: Missing Data",
-        description: "Aircraft or airline data couldn't be loaded. Some features may not work correctly.",
+        description: "Aircraft or airline data couldn't be loaded. Check that the CSV files are in the correct location with proper formatting.",
         variant: "destructive"
       });
     }
@@ -122,7 +134,7 @@ export const initializeDataMaps = async () => {
     console.error('Error initializing data maps:', error);
     toast({
       title: "Data Loading Error",
-      description: "Failed to load aircraft and airline data. Check console for details.",
+      description: "Failed to load aircraft and airline data. Check console for details and ensure CSV files are in the correct location.",
       variant: "destructive"
     });
   }
